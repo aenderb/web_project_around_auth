@@ -10,6 +10,11 @@ function Header({ isLoggedIn, userEmail, onSignOut }) {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const handleSignOut = () => {
+    setIsMenuOpen(false); // Fecha o menu antes de fazer logout
+    onSignOut();
+  };
+
   return (
     <header className={`header ${isMenuOpen ? "header_menu-open" : ""}`}>
       <div className="header__top">
@@ -29,7 +34,7 @@ function Header({ isLoggedIn, userEmail, onSignOut }) {
           {isLoggedIn ? (
             <div className="header__user-info">
               {userEmail && <p className="header__email">{userEmail}</p>}
-              <button className="header__link" onClick={onSignOut}>
+              <button className="header__link" onClick={handleSignOut}>
                 Sair
               </button>
             </div>
@@ -51,7 +56,7 @@ function Header({ isLoggedIn, userEmail, onSignOut }) {
         >
           <div className="header__user-info header__user-info_mobile">
             {userEmail && <p className="header__email">{userEmail}</p>}
-            <button className="header__link" onClick={onSignOut}>
+            <button className="header__link" onClick={handleSignOut}>
               Sair
             </button>
           </div>

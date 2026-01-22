@@ -168,7 +168,7 @@ function App() {
         setCurrentUser(newData);
         handleClosePopup();
       } catch (err) {
-        console.log(err + " - Erro ao atualizar informações do usuário");
+        console.error(err + " - Erro ao atualizar informações do usuário");
       } finally {
         setIsLoadingUserInfo(false);
       }
@@ -184,7 +184,7 @@ function App() {
         setCards((prevCards) => [newCard, ...prevCards]);
         handleClosePopup();
       } catch (err) {
-        console.log(err + " - Erro ao adicionar novo card");
+        console.error(err + " - Erro ao adicionar novo card");
       } finally {
         setIsLoadingAddCard(false);
       }
@@ -199,7 +199,7 @@ function App() {
         const newData = await api.updateAvatar(data);
         setCurrentUser(newData);
       } catch (err) {
-        console.log(err + " - Erro ao atualizar avatar do usuário");
+        console.error(err + " - Erro ao atualizar avatar do usuário");
       } finally {
         setIsLoadingAvatar(false);
         handleClosePopup();
