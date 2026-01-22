@@ -1,12 +1,21 @@
 import Header from "./Header/Header";
 import Main from "./Main/Main";
 import Footer from "./Footer/Footer";
+import ProtectedRoute from "./ProtectedRoute";
+import Register from "./Register/Register";
+import Login from "./Login/Login";
+import InfoTooltip from "./InfoTooltip/InfoTooltip";
+import Loader from "./Loader/Loader";
 import { useState, useEffect, useCallback } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { api } from "../utils/api";
+import * as auth from "../utils/auth";
 import { CurrentUserContext } from "../contexts/CurrentUserContext.js";
 
 function App() {
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isCheckingToken, setIsCheckingToken] = useState(true);
   const [currentUser, setCurrentUser] = useState({});
   const [cards, setCards] = useState([]);
   const [popup, setPopup] = useState(null);
@@ -14,22 +23,105 @@ function App() {
   const [isLoadingAvatar, setIsLoadingAvatar] = useState(false);
   const [isLoadingAddCard, setIsLoadingAddCard] = useState(false);
   const [isLoadingDeleteCard, setIsLoadingDeleteCard] = useState(false);
+  const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false);
+  const [infoTooltipStatus, setInfoTooltipStatus] = useState({
+    isSuccess: false,
+    message: "",
+  });
+
+  const handleRegister = useCallback(async (email, password) => {
+    try {
+      await auth.register(email, password);
+      setInfoTooltipStatus({
+        isSuccess: true,
+        message: "Vitória! Você se registrou com sucesso.",
+      });
+      setIsInfoTooltipOpen(true);
+    } catch (err) {
+      console.error(err + " - Erro ao registrar usuário");
+      setInfoTooltipStatus({
+        isSuccess: false,
+        message: "Ops, algo deu errado!\nPor favor, tente novamente.",
+      });
+      setIsInfoTooltipOpen(true);
+    }
+  }, []);
+
+  const handleCloseInfoTooltip = useCallback(() => {
+    setIsInfoTooltipOpen(false);
+    if (infoTooltipStatus.isSuccess) {
+      navigate("/signin");
+    }
+  }, [infoTooltipStatus.isSuccess, navigate]);
+
+  const handleLogin = useCallback(
+    async (email, password) => {
+      try {
+        const data = await auth.login(email, password);
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("email", email);
+          setIsLoggedIn(true);
+
+          // Carregar dados do usuário após login
+          const [userData, cardsData] = await Promise.all([
+            api.getUserInfo(),
+            api.getInitialCards(),
+          ]);
+          setCurrentUser({ ...userData, email });
+          setCards(cardsData);
+
+          navigate("/");
+        }
+      } catch (err) {
+        console.error(err + " - Erro ao fazer login");
+        setInfoTooltipStatus({
+          isSuccess: false,
+          message: "Ops, algo deu errado!\nPor favor, tente novamente.",
+        });
+        setIsInfoTooltipOpen(true);
+      }
+    },
+    [navigate],
+  );
+
+  const handleSignOut = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("email");
+    setIsLoggedIn(false);
+    setCurrentUser({});
+    setCards([]);
+    navigate("/signin");
+  }, [navigate]);
 
   useEffect(() => {
     const loadInitialData = async () => {
       try {
+        const email = localStorage.getItem("email");
         const [userData, cardsData] = await Promise.all([
           api.getUserInfo(),
           api.getInitialCards(),
         ]);
-        setCurrentUser(userData);
+        setCurrentUser({ ...userData, email });
         setCards(cardsData);
       } catch (err) {
         console.error(err + " - Erro ao carregar dados iniciais");
+        localStorage.removeItem("token");
+        localStorage.removeItem("email");
+        setIsLoggedIn(false);
+      } finally {
+        setIsCheckingToken(false);
       }
     };
 
-    loadInitialData();
+    // Verifica se tem token no localStorage
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+      loadInitialData();
+    } else {
+      setIsCheckingToken(false);
+    }
   }, []);
 
   const handleOpenPopup = useCallback((popupData) => {
@@ -120,34 +212,58 @@ function App() {
     <CurrentUserContext.Provider
       value={{ currentUser, handleUpdateUser, handleUpdateAvatar }}
     >
-      <div className="page">
-        <Header />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Main
-                cards={cards}
-                onCardLike={handleCardLike}
-                onCardDelete={handleCardDelete}
-                onAddPlaceSubmit={handleAddPlaceSubmit}
-                onOpenPopup={handleOpenPopup}
-                onClosePopup={handleClosePopup}
-                popup={popup}
-                setPopup={setPopup}
-                isLoadingUserInfo={isLoadingUserInfo}
-                isLoadingAvatar={isLoadingAvatar}
-                isLoadingAddCard={isLoadingAddCard}
-                isLoadingDeleteCard={isLoadingDeleteCard}
-              />
-            }
+      {isCheckingToken ? (
+        <div className="page">
+          <Loader />
+        </div>
+      ) : (
+        <div className="page">
+          <Header
+            isLoggedIn={isLoggedIn}
+            userEmail={currentUser.email}
+            onSignOut={handleSignOut}
           />
-          <Route path="/signin" element={<div>Login Page</div>} />
-          <Route path="/signup" element={<div>Register Page</div>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        <Footer />
-      </div>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute isLoggedIn={isLoggedIn}>
+                  <Main
+                    cards={cards}
+                    onCardLike={handleCardLike}
+                    onCardDelete={handleCardDelete}
+                    onAddPlaceSubmit={handleAddPlaceSubmit}
+                    onOpenPopup={handleOpenPopup}
+                    onClosePopup={handleClosePopup}
+                    popup={popup}
+                    setPopup={setPopup}
+                    isLoadingUserInfo={isLoadingUserInfo}
+                    isLoadingAvatar={isLoadingAvatar}
+                    isLoadingAddCard={isLoadingAddCard}
+                    isLoadingDeleteCard={isLoadingDeleteCard}
+                  />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/signin" element={<Login onLogin={handleLogin} />} />
+            <Route
+              path="/signup"
+              element={<Register onRegister={handleRegister} />}
+            />
+            <Route
+              path="*"
+              element={<Navigate to={isLoggedIn ? "/" : "/signin"} replace />}
+            />
+          </Routes>
+          <Footer />
+          <InfoTooltip
+            isOpen={isInfoTooltipOpen}
+            onClose={handleCloseInfoTooltip}
+            isSuccess={infoTooltipStatus.isSuccess}
+            message={infoTooltipStatus.message}
+          />
+        </div>
+      )}
     </CurrentUserContext.Provider>
   );
 }

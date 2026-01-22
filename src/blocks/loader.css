@@ -1,0 +1,46 @@
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.loader__container {
+  display: flex;
+  align-items: center;
+  font-size: 24px;
+  color: #fff;
+}
+
+.loader__text {
+  margin-right: 4px;
+}
+
+.loader__dot {
+  animation: blink 1.4s infinite;
+  opacity: 0;
+}
+
+.loader__dot_1 {
+  animation-delay: 0s;
+}
+
+.loader__dot_2 {
+  animation-delay: 0.2s;
+}
+
+.loader__dot_3 {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
