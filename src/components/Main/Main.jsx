@@ -2,12 +2,12 @@ import { useCallback, useContext, useMemo } from "react";
 import pencil from "../../images/Pencil.svg";
 import plus from "../../images/Plus.svg";
 
-import Popup from "./components/Popup/Popup";
 import { CurrentUserContext } from "../../contexts/CurrentUserContext.js";
-import NewCard from "./components/Popup/components/NewCard/NewCard";
-import EditProfile from "./components/Popup/components/EditProfile/EditProfile";
-import EditAvatar from "./components/Popup/components/EditAvatar/EditAvatar";
-import RemoveCard from "./components/Popup/components/RemoveCard/removeCard.jsx";
+import AddPlacePopup from "./components/Popup/components/AddPlacePopup/AddPlacePopup.jsx";
+import EditProfilePopup from "./components/Popup/components/EditProfile/EditProfile";
+import EditAvatarPopup from "./components/Popup/components/EditAvatar/EditAvatar";
+import ImagePopup from "./components/Popup/components/ImagePopup/ImagePopup";
+import ConfirmDeletePopup from "./components/Popup/components/RemoveCard/removeCard.jsx";
 import Card from "./components/Card/Card";
 
 function Main({
@@ -126,33 +126,35 @@ function Main({
         </ul>
       </section>
 
-      {popup && (
-        <Popup onClose={onClosePopup} title={popup.title}>
-          {popup.type === "editProfile" && (
-            <EditProfile
-              isLoadingUserInfo={isLoadingUserInfo}
-              key={currentUser?._id || currentUser?.name || "edit-profile"}
-            />
-          )}
-          {popup.type === "editAvatar" && (
-            <EditAvatar isLoadingAvatar={isLoadingAvatar} />
-          )}
-          {popup.type === "newCard" && (
-            <NewCard
-              isLoadingAddCard={isLoadingAddCard}
-              onClose={onClosePopup}
-              onAddPlaceSubmit={onAddPlaceSubmit}
-            />
-          )}
-          {popup.type === "delete" && (
-            <RemoveCard
-              onRemoveCardSubmit={onCardDelete}
-              card={popup.card}
-              isLoadingDeleteCard={isLoadingDeleteCard}
-            />
-          )}
-          {!popup.type && popup.children}
-        </Popup>
+      {/* Popups específicos */}
+      <EditProfilePopup
+        isOpen={popup?.type === "editProfile"}
+        onClose={onClosePopup}
+        isLoadingUserInfo={isLoadingUserInfo}
+      />
+
+      <EditAvatarPopup
+        isOpen={popup?.type === "editAvatar"}
+        onClose={onClosePopup}
+        isLoadingAvatar={isLoadingAvatar}
+      />
+
+      <AddPlacePopup
+        isOpen={popup?.type === "newCard"}
+        onClose={onClosePopup}
+        onAddPlaceSubmit={onAddPlaceSubmit}
+        isLoadingAddCard={isLoadingAddCard}
+      />
+
+      <ConfirmDeletePopup
+        card={popup?.type === "delete" ? popup.card : null}
+        onRemoveCardSubmit={onCardDelete}
+        isLoadingDeleteCard={isLoadingDeleteCard}
+        onClose={onClosePopup}
+      />
+
+      {popup && !popup.type && (
+        <ImagePopup image={popup} onClose={onClosePopup} />
       )}
     </main>
   );

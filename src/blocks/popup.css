@@ -172,12 +172,13 @@
 }
 
 .popup__button_disabled {
-  color: #000;
-  opacity: 0.2;
-  border: 1px solid #000;
-  border-radius: 2px;
   background: #fff;
+  color: #c4c4c4;
+  border: 1px solid #c4c4c4;
+  border-radius: 2px;
+  cursor: not-allowed;
   pointer-events: none;
+  opacity: 1;
 }
 
 .popup__icon-container {

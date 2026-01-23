@@ -160,6 +160,31 @@ src/
 
 ## Como Executar
 
+### Pré-requisitos
+- Node.js (versão 14 ou superior)
+- npm ou yarn
+
+### Configuração de Variáveis de Ambiente
+
+O projeto utiliza variáveis de ambiente para armazenar URLs da API e tokens de autenticação. Siga os passos abaixo:
+
+1. **Copie o arquivo de exemplo**:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Preencha as variáveis no arquivo `.env`**:
+   ```env
+   VITE_API_AUTH_URL=https://se-register-api.en.tripleten-services.com/v1
+   VITE_API_BASE_URL=https://around-api.pt-br.tripleten-services.com/v1
+   VITE_API_TOKEN=seu-token-aqui
+   ```
+
+3. **Importante**: 
+   - O arquivo `.env` **não deve** ser commitado no git (já está no `.gitignore`)
+   - O arquivo `.env.example` serve como template para a equipe
+   - Variáveis no Vite devem começar com `VITE_` para serem expostas ao cliente
+
 ### Instalação
 ```bash
 npm install

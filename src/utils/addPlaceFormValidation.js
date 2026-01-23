@@ -15,7 +15,7 @@ export const validateCardImageUrl = (url) => {
 };
 
 // Função para validar o formulário completo
-export const validateNewCardForm = (title, url) => {
+export const validateAddPlaceForm = (title, url) => {
   const titleError = validateCardTitle(title);
   const urlError = validateCardImageUrl(url);
 

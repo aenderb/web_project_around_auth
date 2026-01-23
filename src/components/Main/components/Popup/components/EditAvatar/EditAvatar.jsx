@@ -1,19 +1,36 @@
 import { useState, useRef, useContext, useCallback } from "react";
+import PopupWithForm from "../PopupWithForm/PopupWithForm";
 import {
   validateAvatarUrl,
   validateAvatarForm,
-} from "../../../../../../utils/avatarFormValidation.js";
-import { CurrentUserContext } from "../../../../../../contexts/CurrentUserContext.js";
+} from "@utils/avatarFormValidation.js";
+import { CurrentUserContext } from "@contexts/CurrentUserContext.js";
 
-function EditAvatar({ isLoadingAvatar }) {
+const INITIAL_STATE = {
+  avatarUrl: "",
+  avatarError: "",
+};
+
+function EditAvatarPopup({ isLoadingAvatar, isOpen, onClose }) {
   const avatarInputRef = useRef();
-  const [avatarError, setAvatarError] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState(INITIAL_STATE.avatarUrl);
+  const [avatarError, setAvatarError] = useState(INITIAL_STATE.avatarError);
 
   const { handleUpdateAvatar } = useContext(CurrentUserContext);
 
+  const handleClose = () => {
+    // Reseta os campos ao fechar
+    setAvatarUrl(INITIAL_STATE.avatarUrl);
+    setAvatarError(INITIAL_STATE.avatarError);
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = INITIAL_STATE.avatarUrl;
+    }
+    onClose();
+  };
+
   const handleAvatarChange = () => {
     const value = avatarInputRef.current.value;
-
+    setAvatarUrl(value);
     const error = validateAvatarUrl(value);
     setAvatarError(error);
   };
@@ -23,7 +40,6 @@ function EditAvatar({ isLoadingAvatar }) {
       e.preventDefault();
 
       const value = avatarInputRef.current.value;
-
       const validation = validateAvatarForm(value);
 
       if (validation.isValid) {
@@ -34,14 +50,23 @@ function EditAvatar({ isLoadingAvatar }) {
         setAvatarError(validation.urlError);
       }
     },
-    [handleUpdateAvatar]
+    [handleUpdateAvatar],
   );
 
+  // Verifica se o formulário é válido
+  const isFormValid = avatarUrl.trim() && !avatarError;
+
+  if (!isOpen) return null;
+
   return (
-    <form
-      className="popup__form"
-      id="update-avatar-form"
+    <PopupWithForm
+      title="Alterar a foto do perfil"
+      name="edit-avatar"
+      buttonText="Salvar"
       onSubmit={handleSubmit}
+      onClose={handleClose}
+      isLoading={isLoadingAvatar}
+      isValid={isFormValid}
     >
       <label className="popup__field popup__field-avatar">
         <input
@@ -56,7 +81,6 @@ function EditAvatar({ isLoadingAvatar }) {
           onChange={handleAvatarChange}
           required
         />
-
         <span
           className={`popup__input-error ${
             avatarError ? "popup__error_visible" : ""
@@ -65,15 +89,8 @@ function EditAvatar({ isLoadingAvatar }) {
           {avatarError}
         </span>
       </label>
-      <button
-        type="submit"
-        className="popup__button popup__button-avatar"
-        disabled={isLoadingAvatar}
-      >
-        {isLoadingAvatar ? "Salvando..." : "Salvar"}
-      </button>
-    </form>
+    </PopupWithForm>
   );
 }
 
-export default EditAvatar;
+export default EditAvatarPopup;

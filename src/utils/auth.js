@@ -1,4 +1,4 @@
-const BASE_URL = "https://se-register-api.en.tripleten-services.com/v1";
+const BASE_URL_AUTH = import.meta.env.VITE_API_AUTH_URL;
 
 const checkResponse = (res) => {
   if (res.ok) {
@@ -8,7 +8,7 @@ const checkResponse = (res) => {
 };
 
 export const register = (email, password) => {
-  return fetch(`${BASE_URL}/signup`, {
+  return fetch(`${BASE_URL_AUTH}/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -18,7 +18,7 @@ export const register = (email, password) => {
 };
 
 export const login = (email, password) => {
-  return fetch(`${BASE_URL}/signin`, {
+  return fetch(`${BASE_URL_AUTH}/signin`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -28,7 +28,7 @@ export const login = (email, password) => {
 };
 
 export const checkToken = (token) => {
-  return fetch(`${BASE_URL}/users/me`, {
+  return fetch(`${BASE_URL_AUTH}/users/me`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

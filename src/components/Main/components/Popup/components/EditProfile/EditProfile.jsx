@@ -1,23 +1,34 @@
 import { useState, useContext } from "react";
+import PopupWithForm from "../PopupWithForm/PopupWithForm";
 import {
   validateName,
   validateAbout,
   validateProfileForm,
 } from "../../../../../../utils/profileFormValidation.js";
 import { CurrentUserContext } from "../../../../../../contexts/CurrentUserContext.js";
-function EditProfile({ isLoadingUserInfo }) {
+
+function EditProfilePopup({ isLoadingUserInfo, isOpen, onClose }) {
   const { currentUser, handleUpdateUser } = useContext(CurrentUserContext);
 
-  const [name, setName] = useState(currentUser.name);
-  const [about, setAbout] = useState(currentUser.about);
+  // Usa os valores de currentUser como valor inicial
+  const [name, setName] = useState(currentUser.name || "");
+  const [about, setAbout] = useState(currentUser.about || "");
 
   const [nameError, setNameError] = useState("");
   const [aboutError, setAboutError] = useState("");
 
+  const handleClose = () => {
+    // Reseta os campos para os valores originais ao fechar
+    setName(currentUser.name || "");
+    setAbout(currentUser.about || "");
+    setNameError("");
+    setAboutError("");
+    onClose();
+  };
+
   const handleNameChange = (event) => {
     const value = event.target.value;
     setName(value);
-
     const error = validateName(value);
     setNameError(error);
   };
@@ -25,7 +36,6 @@ function EditProfile({ isLoadingUserInfo }) {
   const handleAboutChange = (event) => {
     const value = event.target.value;
     setAbout(value);
-
     const error = validateAbout(value);
     setAboutError(error);
   };
@@ -44,8 +54,22 @@ function EditProfile({ isLoadingUserInfo }) {
       setAboutError(validation.aboutError);
     }
   };
+
+  // Verifica se o formulário é válido
+  const isFormValid = name.trim() && about.trim() && !nameError && !aboutError;
+
+  if (!isOpen) return null;
+
   return (
-    <form className="popup__form" id="profile-form" onSubmit={handleSubmit}>
+    <PopupWithForm
+      title="Editar perfil"
+      name="edit-profile"
+      buttonText="Salvar"
+      onSubmit={handleSubmit}
+      onClose={handleClose}
+      isLoading={isLoadingUserInfo}
+      isValid={isFormValid}
+    >
       <label className="popup__field">
         <input
           type="text"
@@ -61,7 +85,6 @@ function EditProfile({ isLoadingUserInfo }) {
           value={name}
           onChange={handleNameChange}
         />
-
         <span
           className={`popup__input-error ${
             nameError ? "popup__error_visible" : ""
@@ -85,7 +108,6 @@ function EditProfile({ isLoadingUserInfo }) {
           value={about}
           onChange={handleAboutChange}
         />
-
         <span
           className={`popup__input-error ${
             aboutError ? "popup__error_visible" : ""
@@ -94,14 +116,8 @@ function EditProfile({ isLoadingUserInfo }) {
           {aboutError}
         </span>
       </label>
-      <button
-        type="submit"
-        className="popup__button"
-        disabled={isLoadingUserInfo}
-      >
-        {isLoadingUserInfo ? "Salvando..." : "Salvar"}
-      </button>
-    </form>
+    </PopupWithForm>
   );
 }
-export default EditProfile;
+
+export default EditProfilePopup;

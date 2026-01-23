@@ -44,7 +44,7 @@ function Header({ isLoggedIn, userEmail, onSignOut }) {
             </Link>
           ) : location.pathname === "/signin" ? (
             <Link to="/signup" className="header__link">
-              Entrar
+              Cadastrar
             </Link>
           ) : null}
         </nav>

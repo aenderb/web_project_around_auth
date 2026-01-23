@@ -1,23 +1,48 @@
 import { useState, useCallback } from "react";
+import PopupWithForm from "../PopupWithForm/PopupWithForm.jsx";
 import {
-  validateNewCardForm,
+  validateAddPlaceForm,
   validateCardTitle,
   validateCardImageUrl,
-} from "../../../../../../utils/newCardFormValidation.js";
-function NewCard({ onAddPlaceSubmit, isLoadingAddCard }) {
-  const [titleError, setTitleError] = useState("");
-  const [urlError, setUrlError] = useState("");
+} from "@utils/addPlaceFormValidation.js";
+
+const INITIAL_STATE = {
+  title: "",
+  url: "",
+  titleError: "",
+  urlError: "",
+};
+
+function AddPlacePopup({
+  onAddPlaceSubmit,
+  isLoadingAddCard,
+  isOpen,
+  onClose,
+}) {
+  const [title, setTitle] = useState(INITIAL_STATE.title);
+  const [url, setUrl] = useState(INITIAL_STATE.url);
+  const [titleError, setTitleError] = useState(INITIAL_STATE.titleError);
+  const [urlError, setUrlError] = useState(INITIAL_STATE.urlError);
+
+  const handleClose = () => {
+    // Reseta os campos ao fechar
+    setTitle(INITIAL_STATE.title);
+    setUrl(INITIAL_STATE.url);
+    setTitleError(INITIAL_STATE.titleError);
+    setUrlError(INITIAL_STATE.urlError);
+    onClose();
+  };
 
   const handleTitleChange = (event) => {
     const value = event.target.value;
-
+    setTitle(value);
     const error = validateCardTitle(value);
     setTitleError(error);
   };
 
   const handleUrlChange = (event) => {
     const value = event.target.value;
-
+    setUrl(value);
     const error = validateCardImageUrl(value);
     setUrlError(error);
   };
@@ -27,7 +52,7 @@ function NewCard({ onAddPlaceSubmit, isLoadingAddCard }) {
       e.preventDefault();
 
       const { name, link } = e.target;
-      const validation = validateNewCardForm(name.value, link.value);
+      const validation = validateAddPlaceForm(name.value, link.value);
 
       if (validation.isValid) {
         onAddPlaceSubmit({
@@ -39,14 +64,23 @@ function NewCard({ onAddPlaceSubmit, isLoadingAddCard }) {
         setUrlError(validation.urlError);
       }
     },
-    [onAddPlaceSubmit]
+    [onAddPlaceSubmit],
   );
 
+  // Verifica se o formulário é válido
+  const isFormValid = title.trim() && url.trim() && !titleError && !urlError;
+
+  if (!isOpen) return null;
+
   return (
-    <form
-      className="popup__form"
-      id="insert-card-form"
+    <PopupWithForm
+      title="Novo local"
+      name="add-place"
+      buttonText="Criar"
       onSubmit={handleSubmit}
+      onClose={handleClose}
+      isLoading={isLoadingAddCard}
+      isValid={isFormValid}
     >
       <label className="popup__field">
         <input
@@ -56,6 +90,7 @@ function NewCard({ onAddPlaceSubmit, isLoadingAddCard }) {
           }`}
           id="title-card-input"
           name="name"
+          value={title}
           placeholder="Título"
           minLength="2"
           maxLength="30"
@@ -79,10 +114,10 @@ function NewCard({ onAddPlaceSubmit, isLoadingAddCard }) {
           id="link-card-input"
           name="link"
           placeholder="Link da imagem"
+          value={url}
           onChange={handleUrlChange}
           required
         />
-
         <span
           className={`popup__input-error ${
             urlError ? "popup__error_visible" : ""
@@ -91,15 +126,8 @@ function NewCard({ onAddPlaceSubmit, isLoadingAddCard }) {
           {urlError}
         </span>
       </label>
-      <button
-        type="submit"
-        className="popup__button"
-        disabled={isLoadingAddCard}
-      >
-        {isLoadingAddCard ? "Criando..." : "Criar"}
-      </button>
-    </form>
+    </PopupWithForm>
   );
 }
 
-export default NewCard;
+export default AddPlacePopup;

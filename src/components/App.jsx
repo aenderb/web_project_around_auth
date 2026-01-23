@@ -2,6 +2,7 @@ import Header from "./Header/Header";
 import Main from "./Main/Main";
 import Footer from "./Footer/Footer";
 import ProtectedRoute from "./ProtectedRoute";
+import PublicRoute from "./PublicRoute";
 import Register from "./Register/Register";
 import Login from "./Login/Login";
 import InfoTooltip from "./InfoTooltip/InfoTooltip";
@@ -245,10 +246,21 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/signin" element={<Login onLogin={handleLogin} />} />
+            <Route
+              path="/signin"
+              element={
+                <PublicRoute isLoggedIn={isLoggedIn}>
+                  <Login onLogin={handleLogin} />
+                </PublicRoute>
+              }
+            />
             <Route
               path="/signup"
-              element={<Register onRegister={handleRegister} />}
+              element={
+                <PublicRoute isLoggedIn={isLoggedIn}>
+                  <Register onRegister={handleRegister} />
+                </PublicRoute>
+              }
             />
             <Route
               path="*"
